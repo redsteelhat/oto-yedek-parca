@@ -1,43 +1,47 @@
 # Otomobil Yedek Parça E-Ticaret Scripti
 
-Otomobil yedek parça satışı için geliştirilmiş, XML entegrasyonlu, tam özellikli e-ticaret sistemi.
+Çoklu tenant mimarisi, canlı destek ve XML tedarikçi entegrasyonları ile otomobil yedek parça satışı için geliştirilmiş uçtan uca e-ticaret platformu.
 
-## 🚀 Özellikler
+## 🚀 Öne Çıkan Yetkinlikler
 
-### Temel Özellikler
-- ✅ Araç uyumluluk filtreleme (Marka/Model/Yıl/Motor Tipi)
-- ✅ Ürün yönetimi (Kategori, Stok, Fiyat, Görseller)
-- ✅ Sipariş yönetimi (Durum takibi, Kargo bilgisi)
-- ✅ Müşteri yönetimi (Adres, Sipariş geçmişi)
-- ✅ Sepet ve Ödeme sistemi
-- ✅ Kupon ve Kampanya sistemi
+### Çoklu Tenant Mimarisi
+- 🌐 Alt alan adı veya özel alan adına göre otomatik tenant seçimi
+- 🏪 Super Admin panelinden sınırsız mağaza yönetimi
+- 🪪 Tenant bazlı veri izolasyonu (kategori, ürün, sipariş, müşteri, ayarlar vb.)
+- 🎨 Tenant başına marka kimliği (logo, favicon, renkler, metinler)
+- 🏠 Ana alan adı üzerinde tüm tenant ürünlerini listeleyen birleşik ana sayfa
 
-### XML Entegrasyonu
-- ✅ Tedarikçi XML'inden ürün çekme
-- ✅ Otomatik stok ve fiyat güncelleme
-- ✅ XML mapping sistemi
-- ✅ Import logları ve hata yönetimi
-- ✅ Cron job ile otomatik güncelleme
+### Satış & Operasyon
+- ✅ Araç uyumluluk filtreleme (marka, model, yıl, motor)
+- ✅ Ürün, stok, fiyat, varyasyon ve görsel yönetimi
+- ✅ Sipariş, kargo, iade ve ödeme durum takibi
+- ✅ Kampanya, kupon ve dinamik fiyatlandırma
+- ✅ Sepet, ödeme adımları, havale dekontu yükleme
 
-### Admin Paneli
-- ✅ Ürün yönetimi (CRUD)
-- ✅ Sipariş yönetimi
-- ✅ Müşteri yönetimi
-- ✅ Tedarikçi yönetimi
-- ✅ Kategori yönetimi
-- ✅ Araç marka/model/yıl yönetimi
+### Canlı Destek Sistemi
+- 💬 Gerçek zamanlı müşteri temsilcisi sohbetleri
+- 👥 Admin panelinde oda, mesaj, durum yönetimi
+- 🔔 Okunmamış mesaj sayacı ve atama akışı
+
+### XML Entegrasyonları
+- 🔄 Çoklu tedarikçiden ürün ve stok çekme
+- 🧩 XML mapping arayüzü
+- 🗒️ Import logları, hata takibi ve raporlama
+- ⏱️ Planlanmış görevlerle otomatik senkronizasyon
 
 ## 📋 Gereksinimler
 
-- PHP >= 8.1
+- PHP ≥ 8.1
 - Composer
-- MySQL/MariaDB
-- Node.js & NPM (Frontend assets için)
+- MySQL / MariaDB
+- Node.js & npm / pnpm / yarn (Vite + Tailwind derlemeleri için)
+- Redis (önerilen, cache & kuyruklar için opsiyonel)
 
-## 🔧 Kurulum
+## 🔧 Kurulum Adımları
 
-1. **Projeyi klonlayın veya indirin**
+1. **Kaynak kodu alın**
    ```bash
+   git clone <repo-url> otoYedekParcaScript
    cd otoYedekParcaScript
    ```
 
@@ -47,177 +51,155 @@ Otomobil yedek parça satışı için geliştirilmiş, XML entegrasyonlu, tam ö
    npm install
    ```
 
-3. **Ortam dosyasını oluşturun**
+3. **Ortam dosyasını hazırlayın**
    ```bash
-   cp .env.example .env
+   cp .env.example .env    # Windows için: copy .env.example .env
    php artisan key:generate
    ```
 
-4. **Veritabanı ayarlarını yapın**
-   `.env` dosyasında veritabanı bilgilerinizi güncelleyin:
+4. **.env yapılandırması**
+   Minimum gerekli değişkenler:
    ```
+   APP_NAME="Yedek Parça"
+   APP_URL=http://127.0.0.1:8000
+
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
    DB_PORT=3306
    DB_DATABASE=yedekparca_db
    DB_USERNAME=root
    DB_PASSWORD=
-   ```
 
-5. **Migration'ları çalıştırın**
+   DEFAULT_TENANT=   # (opsiyonel) varsayılan tenant slug/subdomain
+   TENANT_AUTO_FALLBACK=true
+   TENANT_FALLBACK_FIRST_ACTIVE=true
+   ```
+   > İsteğe bağlı olarak cache, kuyruk, mail ve SMS yapılandırmalarını ekleyin.
+
+5. **Veritabanını hazırlayın**
    ```bash
    php artisan migrate
-   ```
-
-6. **Storage linkini oluşturun**
-   ```bash
    php artisan storage:link
    ```
 
-7. **Frontend assets'leri derleyin**
+6. **Ön yüz varlıklarını derleyin**
    ```bash
-   npm run dev
-   # veya production için
-   npm run build
+   npm run dev        # Geliştirme
+   npm run build      # Üretim
    ```
 
-## 🔐 Admin Kullanıcı Oluşturma
+7. **Önbellekleri temizleyin (gerekli durumlarda)**
+   ```bash
+   php artisan optimize:clear
+   ```
 
-Veritabanına admin kullanıcı eklemek için:
+## 🧑‍💼 İlk Kullanıcı ve Tenant Oluşturma
 
-```bash
-php artisan tinker
-```
+1. **Süper admin hesabı oluşturun**
+   ```bash
+   php artisan tinker
+   ```
+   ```php
+   $user = new App\Models\User();
+   $user->name = 'Super Admin';
+   $user->email = 'superadmin@example.com';
+   $user->password = bcrypt('password');
+   $user->user_type = 'admin';
+   $user->tenant_id = null; // null => tüm tenantlara erişimi olan süper admin
+   $user->save();
+   ```
 
-Tinker içinde:
-```php
-$user = new App\Models\User();
-$user->name = 'Admin';
-$user->email = 'admin@example.com';
-$user->password = bcrypt('password');
-$user->user_type = 'admin';
-$user->save();
-```
+2. **Super Admin paneline giriş yapın**
+   - URL: `http://127.0.0.1:8000/super-admin/dashboard`
+   - Buradan yeni tenant (mağaza) oluşturabilir, alt alan adı / alan adını tanımlayabilirsiniz.
 
-## 📦 XML İçe Aktarma
+3. **Tenant yöneticisi ekleyin**
+   - Admin panelinden kullanıcı oluştururken `tenant_id` otomatik atanır.
+   - Tenant limitleri (ürün, kullanıcı sayısı vb.) Tenant modelindeki plan ayarlarına göre kontrol edilir.
 
-### Manuel İçe Aktarma
-```bash
-php artisan xml:import {supplier_id}
-```
+## 🏠 Ana Alan Adı (Aggregator) Davranışı
 
-### Tüm Tedarikçileri İçe Aktarma
-```bash
-php artisan xml:import
-```
+- `http://127.0.0.1:8000/` adresinde tüm aktif tenantların ürünleri listelenir.
+- Tenant seçimi yapılmadığında sistem marka kartları, popüler kategoriler ve son eklenen ürünleri çoklu tenant üzerinden gösterir.
+- Her ürün/kategori kartı ilgili tenant'a yönlendiren bağlantılar içerir (`?tenant=slug` veya alt alan adı).
 
-### Cron Job Kurulumu (Otomatik Güncelleme)
-Crontab'a ekleyin:
-```bash
-* */6 * * * cd /path-to-project && php artisan xml:import >> /dev/null 2>&1
-```
-(Her 6 saatte bir güncelleme yapar)
+## 📦 XML Komutları
 
-## 🗂️ Proje Yapısı
+- Belirli tedarikçiyi içe aktar:  
+  `php artisan xml:import {supplier_id}`
+- Tüm tedarikçiler:  
+  `php artisan xml:import`
+- Örnek cron (6 saatte bir):
+  ```
+  * */6 * * * cd /path-to-project && php artisan xml:import >> /dev/null 2>&1
+  ```
+
+## 📂 Klasör Yapısı (Özet)
 
 ```
 app/
-├── Console/
-│   └── Commands/
-│       └── XmlImport.php          # XML import komutu
 ├── Http/
 │   ├── Controllers/
-│   │   ├── Admin/                 # Admin paneli controller'ları
-│   │   ├── Frontend/              # Frontend controller'ları
-│   │   └── XmlIntegration/       # XML entegrasyon controller'ları
-│   └── Middleware/
-│       └── AdminMiddleware.php     # Admin yetkilendirme
-├── Models/                         # Eloquent modelleri
-└── ...
+│   │   ├── Admin/           # Tenant aware admin panelleri
+│   │   ├── Frontend/        # Çoklu tenant destekli frontend
+│   │   └── SuperAdmin/      # Tenant yönetimi
+│   ├── Middleware/
+│   │   ├── TenantMiddleware.php
+│   │   └── SetLocale.php
+│   └── Kernel.php
+├── Models/
+│   ├── Tenant.php
+│   ├── Product.php (tenant scope)
+│   └── ...
+├── Scopes/
+│   └── TenantScope.php
+└── Services/
+    └── TenantService.php
 
-database/
-├── migrations/                     # Veritabanı migration'ları
-└── seeders/                       # Veritabanı seed'leri
-
-routes/
-└── web.php                         # Web route'ları
-
-resources/
-├── views/                         # Blade view'ları
-│   ├── admin/                     # Admin paneli view'ları
-│   └── frontend/                  # Frontend view'ları
-└── ...
+resources/views/
+├── layouts/app.blade.php       # Dinamik marka kimliği
+├── frontend/home.blade.php     # Aggregator + tenant landing
+└── admin/...                   # Yönetim arayüzleri
 ```
 
-## 📊 Veritabanı Tabloları
+## 🔄 Route Özeti
 
-### Ana Tablolar
-- `cars_brands` - Araç markaları
-- `cars_models` - Araç modelleri
-- `cars_years` - Araç yılları ve motor tipleri
-- `categories` - Ürün kategorileri
-- `products` - Ürünler
-- `product_car_compatibility` - Ürün-araç uyumluluğu
-- `product_images` - Ürün görselleri
-- `suppliers` - Tedarikçiler
-- `supplier_xml_mappings` - XML mapping'leri
-- `xml_import_logs` - Import logları
-- `orders` - Siparişler
-- `order_items` - Sipariş kalemleri
-- `addresses` - Müşteri adresleri
-- `coupons` - Kuponlar
-- `campaigns` - Kampanyalar
+Tüm rotalar: `php artisan route:list`
 
-## 🔄 API Endpoints
+| Bölüm                | Örnek Route                                   |
+|----------------------|-----------------------------------------------|
+| Frontend             | `GET /`, `GET /urunler`, `GET /kampanyalar`  |
+| Hesap                | `GET /hesabim`, `POST /hesabim/adresler`     |
+| Sepet & Ödeme        | `POST /sepet/ekle`, `POST /odeme/adim-1`     |
+| Canlı Destek         | `GET /chat`, `POST /chat/{room}/mesaj`       |
+| Admin Panel          | `GET /admin/products`, `GET /admin/orders`   |
+| Super Admin          | `GET /super-admin/tenants`, `POST /super-admin/tenants` |
 
-### Frontend
-- `GET /` - Ana sayfa
-- `GET /urunler` - Ürün listesi
-- `GET /urunler/{slug}` - Ürün detayı
-- `POST /sepet/ekle` - Sepete ekle
-- `GET /odeme` - Ödeme sayfası
+## 🔒 Güvenlik & Yetkilendirme
 
-### Admin
-- `GET /admin/dashboard` - Dashboard
-- `GET /admin/products` - Ürün listesi
-- `GET /admin/orders` - Sipariş listesi
-- `GET /admin/suppliers` - Tedarikçi listesi
-- `POST /admin/suppliers/{id}/import` - XML içe aktarma
+- CSRF, XSS ve SQL Injection korumaları (Laravel varsayılanları)
+- Tenant bazlı global scope ile veri izolasyonu
+- `TenantMiddleware` ile alt alan adına göre kimliklendirme
+- Super admin için tenant bypass ve yönetim paneli
+- Şifreler bcrypt ile hash’lenir
 
-## 🎨 Frontend Tema
+## 🧰 Yararlı Artisan Komutları
 
-Frontend view'ları henüz oluşturulmadı. Şu adımlarla devam edilebilir:
-
-1. TailwindCSS veya Bootstrap kurulumu
-2. Layout dosyaları oluşturma
-3. Ana sayfa view'ı
-4. Ürün listesi ve detay sayfaları
-5. Sepet ve ödeme sayfaları
-
-## 🔒 Güvenlik
-
-- CSRF koruması aktif
-- SQL Injection koruması (Eloquent ORM)
-- XSS koruması (Blade template engine)
-- Admin yetkilendirme middleware'i
-- Şifreler bcrypt ile hash'lenir
+```bash
+php artisan optimize:clear   # Önbellekleri temizler
+php artisan queue:work       # Kuyrukları dinler
+```
 
 ## 📝 Notlar
 
-- View'lar henüz oluşturulmadı (sıradaki adım)
-- Authentication sistemi (Laravel Breeze/Jetstream) kurulmadı
-- Ödeme entegrasyonu henüz eklenmedi
-- Kargo entegrasyonu henüz yapılmadı
+- Ödeme entegrasyonları örnek amaçlıdır, canlı sistemde PCI uyumu göz önünde bulundurun.
+- Alt alan adı yönlendirmeleri için local geliştirmede hosts dosyasına kayıt ekleyebilirsiniz (`tenant1.local.test` vb.).
+- Aggregator ana sayfasında görüntülenen ürün ve kategoriler cache servisleri üzerinden yönetilir.
 
 ## 📄 Lisans
 
-Bu proje özel bir projedir.
-
-## 👨‍💻 Geliştirici
-
-Geliştirme süreci devam etmektedir.
+Bu proje özel/kapatılmış lisans altındadır. Yalnızca yetkili ekipler kullanabilir.
 
 ---
 
-**Son Güncelleme:** 2025-11-05
-# oto-yedek-parca
+**Son Güncelleme:** 2025-11-10
